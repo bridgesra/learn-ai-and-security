@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Understanding AI Security</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            text-align: center;
+        }
+        .game-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #4f46e5;
+        }
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #6b7280;
+        }
+        .explanation {
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            color: #374151;
+            line-height: 1.75;
+        }
+        .interactive-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        .component {
+            width: 180px;
+            padding: 1.25rem;
+            margin-bottom: 0.75rem;
+            border-radius: 0.5rem;
+            background-color: #e5e7eb;
+            border: 1px solid #d1d5db;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, border-width 0.2s ease-in-out;
+            font-weight: 500;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .component:hover {
+            transform: translateY(-4px) scale(1.04);
+            box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15), 0 3px 6px -1px rgba(0, 0, 0, 0.08);
+        }
+        .component.active {
+            border: 2px solid #3b82f6;
+            transform: scale(1.06);
+            box-shadow: 0 8px 10px -1px rgba(0, 0, 0, 0.2), 0 4px 8px -1px rgba(0, 0, 0, 0.12);
+        }
+
+        .arrow {
+            margin-bottom: 0.75rem;
+            font-size: 1.5rem;
+            color: #9ca3af;
+        }
+
+        .explanation-box {
+            padding: 1.25rem;
+            margin-top: 1.5rem;
+            border-radius: 0.5rem;
+            background-color: #f7f7f7;
+            border: 1px solid #e5e7eb;
+            text-align: left;
+            font-size: 0.9rem;
+            color: #4b5563;
+            line-height: 1.7;
+            width: 100%;
+        }
+        .next-button {
+            margin-top: 1.5rem;
+        }
+        .back-button {
+            margin-top: 1.5rem;
+        }
+        .hidden {
+            display: none;
+        }
+        .interactive-section {
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+        .fade-in {
+            opacity: 1;
+        }
+       .data-example {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            text-align: left;
+            font-size: 0.8rem;
+            color: #555;
+        }
+
+        #untrainedModelIcon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.7;
+        }
+        #trainedModelIcon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        #sparkleIcon {
+            font-size: 1rem;
+            color: #fef08a;
+            animation: sparkle 1s infinite;
+            display: inline-block;
+        }
+
+        @keyframes sparkle {
+            0% { opacity: 0; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+            100% { opacity: 0; transform: scale(1); }
+        }
+        #teacherIcon{
+           font-size: 1.5rem;
+           margin-bottom: 0.5rem;
+        }
+        #inputDataIcon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        #outputDataIcon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .columns {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            justify-content: space-between;
+            align-items: stretch;
+        }
+
+        .left-column {
+            width: 48%;
+            margin-right: 2%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .right-column {
+            width: 48%;
+            text-align: left;
+        }
+        #initial-right-column-text{
+             padding: 1.25rem;
+            margin-top: 3.5rem;
+            border-radius: 0.5rem;
+            background-color: #f7f7f7;
+            border: 1px solid #e5e7eb;
+            font-size: 0.9rem;
+            color: #4b5563;
+            line-height: 1.7;
+            width: 100%;
+            text-align: left;
+        }
+
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container">
+        <h1 class="game-title">Understanding AI Security</h1>
+
+        <div id="phase1" class="interactive-section">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <h2 class="section-title" style="margin-top: 0;">Phase 1: Training the AI</h2>
+                <button id="nextButton1" class="next-button bg-indigo-500 hover:bg-indigo-700 text-white font-semibold rounded-md py-2.5 px-5 transition duration-300 ease-in-out shadow-md" style="margin-top: 0;">
+                    Go to Inference Phase
+                </button>
+            </div>
+            <p class="explanation">
+                Explore how AI is trained and relevant security issues. Click on each component to learn more.
+            </p>
+            <div class="columns">
+                <div class="left-column">
+                    <h3 class="section-title" style="margin-bottom: 2rem;">AI Training Process</h3>
+                    <div class="interactive-step" style="flex-direction: column; align-items: center;">
+                        <div style="display: flex; justify-content: center; width: 100%;">
+                            <div class="component" id="trainingData" style="margin-right: 2rem;" data-component="1">
+                                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🗄️</div>
+                                AI Training Data
+                            </div>
+                            <div class="component" id="untrainedModel" style="margin-left: 2rem;" data-component="2">
+                                <div id="untrainedModelIcon">⚙️</div>
+                                Untrained Model
+                            </div>
+                        </div>
+                        <div class="arrow" style="margin-top: 2rem;">↓</div>
+                        <div class="component" id="trainingAlgorithm" data-component="3">
+                            <div id="teacherIcon">🧑‍🏫</div>
+                            AI Training Algorithm
+                        </div>
+                        <div class="arrow">↓</div>
+                        <div class="component" id="trainedModel" data-component="4">
+                            <div id="trainedModelIcon">🧠</div>
+                            <span id="sparkleIcon">✨</span>
+                            Trained Model
+                        </div>
+                    </div>
+                </div>
+                <div class="right-column">
+                    <h3 class="section-title">Security Issues with Training Components</h3>
+                    <div id="initialRightColumnText" >
+                        <p style="text-align: left;">Click components of AI training at right to see explanations and detailed security issues.</p>
+
+                        <p style="margin-top: 1rem; text-align: left;"><strong>AI Security Vulnerabilities:</strong></p>
+                        <ul style="list-style-type: disc; padding-left: 2rem; text-align: left;">
+                            <li><strong>Training Data Poisoning:</strong> Introducing manipulated data into the training set, leading to model errors or vulnerabilities.</li>
+                            <li><strong>Backdooring the Model:</strong> Exploiting coorelation in training data to injecting a hidden trigger into the model.</li>
+                            <li><strong>Training Data Privacy Leakage:</strong> Exposing sensitive information present in the training data, even after the model is trained.</li>
+                            <li><strong>Bias from Training Data or Model Type:</strong> The model learns and perpetuates harmful biases present in the training data.</li>
+                            <li><strong>Model Stealing:</strong> Unauthorized replication of a proprietary model.</li>
+                        </ul>
+                    </div>
+                    <div id="explanation1" class="explanation-box hidden">
+                        <h4 style="font-weight: bold; text-align: center;">AI Training Data</h4>
+                        <p>
+                            AI training data is the foundation of the learning process. It's a collection of examples that the AI uses to understand patterns and relationships.
+                        </p>
+                        <div class="data-example">
+                            <p style="font-weight: bold;">Example Training Data:</p>
+                            <ul style="list-style-type: disc; padding-left: 2rem;">
+                                <li>Drone image of a bridge, Label: "Bridge"</li>
+                                <li>Material properties of polymer X, Label: "High Strength"</li>
+                                <li>Truck design parameters, Label: "Drag Coefficient: 0.3"</li>
+                            </ul>
+                        </div>
+                         <p><strong>Security Issues:</strong></p>
+                        <ul style="list-style-type: disc; padding-left: 2rem; text-align: left;">
+                            <li><strong>Bad data leads to an insecure/backdoored model:</strong>
+                                <ul style="list-style-type: circle; padding-left: 2rem;">
+                                    <li><strong>Example (Bad Data):</strong> A drone navigation system might fail in foggy conditions.  A model predicting energy usage might be inaccurate.</li>
+                                    <li><strong>Example (Backdoored Data):</strong> A drone image model might misclassify land containing a pink car.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Can be leaked, subverting privacy:</strong>
+                                <ul style="list-style-type: circle; padding-left: 2rem;">
+                                     <li><strong>Example:</strong>  Patient information in medical training data could be leaked.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Can be biased/lead to biased AI system:</strong>
+                                 <ul style="list-style-type: circle; padding-left: 2rem;">
+                                     <li><strong>Example:</strong>  A medical prediction AI might be less accurate for underrepresented patients.</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <div id="explanation2" class="explanation-box hidden">
+                         <h4 style="font-weight: bold; text-align: center;">Untrained Model</h4>
+                        <p>
+                           The untrained model is the architecture of the AI that defines the mathematical operations to process an input into an output.  Model types include different flavors of Neural Network, a Decision Tree, for example.
+                        </p>
+                         <p><strong>Security Issues:</strong></p>
+                        <ul style="list-style-type: disc; padding-left: 2rem;">
+                            <li><strong>Vulnerability to architectural weaknesses:</strong> The choice of model architecture can introduce vulnerabilities.
+                                <ul style="list-style-type: circle; padding-left: 2rem;">
+                                     <li><strong>Example:</strong> Deep neural networks often are discontinuous which means that small perturbations of an input example that dramatically change the output.</li>
+                                     <li><strong>Example:</strong> Density-based clustering algorithms can produce different outputs for different densities of the data.</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <div id="explanation3" class="explanation-box hidden">
+                         <h4 style="font-weight: bold; text-align: center;">AI Training Algorithm</h4>
+                        <p>
+                            The training algorithm is the method used to "teach" the AI. It requires the AI model architecture, the training data, and usually has some tuning parameters, and outputs a "fit" or "trained" model ready for use.  Stochastic Gradient Descent (SGD) schemes are the most common examples of training algorithms.  It iteratively adjusts the model's parameters to improve its accuracy.
+                        </p>
+                         <p><strong>Security Issues:</strong></p>
+                        <ul style="list-style-type: disc; padding-left: 2rem; text-align: left;">
+                            <li><strong>Susceptibility to adversarial training:</strong> Attackers can manipulate the training process.
+                                 <ul style="list-style-type: circle; padding-left: 2rem;">
+                                     <li><strong>Example:</strong> Adversarial training involves injecting manipulated data into the training process.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Ineffective privacy mechanisms:</strong> The training algorithm can lead to unintentional leakage of sensitive information from the training data.
+                                <ul style="list-style-type: circle; padding-left: 2rem;">
+                                     <li><strong>Example:</strong> A malicious participant could use gradient-based attacks to infer water usage patterns in a federated learning setting.</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <div id="explanation4" class="explanation-box hidden">
+                         <h4 style="font-weight: bold; text-align: center;">Trained Model</h4>
+                        <p>
+                            The trained model is the result of the training process. It embodies the knowledge the AI has gained from the data and is ready to be used for making predictions or decisions.
+                        </p>
+                         <p><strong>Security Issues:</strong></p>
+                        <ul style="list-style-type: disc; padding-left: 2rem; text-align: left;">
+                            <li><strong>Vulnerability to adversarial attacks:</strong> Trained models can be tricked by carefully crafted inputs. The main idea is to leverage discontinuity of the model. 
+                                <ul style="list-style-type: circle; padding-left: 2rem;">
+                                     <li><strong>Example:</strong> A tiny but targetted modification to a drone image could cause a navigation system to misinterpret a landing zone.</li>
+                                     <li><strong>Example:</strong> A tiny but targetted change in weather data could cause a building energy prediction model to drastically overestimate energy consumption.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Risk of model extraction:</strong> Attackers can attempt to steal or replicate a trained model.
+                                <ul style="list-style-type: circle; padding-left: 2rem;">
+                                     <li><strong>Example:</strong> Model distillation could let a competitor replicate a company's proprietary material discovery model.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Potential for backdoor triggers:</strong> If the training process was compromised, the trained model might contain hidden backdoors.
+                                <ul style="list-style-type: circle; padding-left: 2rem;">
+                                     <li><strong>Example:</strong> A drone image processing model might be compromised to misclassify land containing a pink car.</li>
+                                     <li><strong>Example:</strong> A material discovery model might be compromised to mislabel a polymer composition as "high strength".</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="phase2" class="interactive-section hidden">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                 <h2 class="section-title" style="margin-top: 0;">Phase 2: Using the AI (Inference)</h2>
+            <button id="backButton" class="back-button bg-indigo-500 hover:bg-indigo-700 text-white font-semibold rounded-md py-2.5 px-5 transition duration-300 ease-in-out shadow-md" style="margin-top: 0;">
+                    Go to Training Phase
+                </button>
+            </div>
+            <p="explanation">
+                Now, let's see how the trained AI model is used to make predictions. Click on the components to follow the process.
+            </p>
+            <div class="columns">
+                <div class="left-column">
+                    <h3 class="section-title" style="margin-bottom: 2rem;">AI Inference Process</h3>
+                    <div class="interactive-step">
+                        <div class="component" id="inputData2" data-component="5">
+                            <div id="inputDataIcon">🐱</div>
+                            Input Data
+                        </div>
+                        <div class="arrow">↓</div>
+                        <div class="component" id="trainedModel2" data-component="6">
+                             <div id="trainedModelIcon">🧠</div>
+                             <span id="sparkleIcon">✨</span>
+                            Trained Model
+                        </div>
+                        <div class="arrow">↓</div>
+                        <div class="component" id="outputData2" data-component="7">
+                             <div id="outputDataIcon">📢</div>
+                            Output Data
+                        </div>
+                    </div>
+                </div>
+                <div class="right-column">
+                     <h3 class="section-title">Security Issues with Inference/Use</h3>
+                    <div id="initialRightColumnText2" >
+                        <p style="text-align: left;">Click components of AI inference at right to see explanations and detailed security issues.</p>
+
+                        <p style="margin-top: 1rem; text-align: left;"><strong>AI Inference Vulnerabilities:</strong></p>
+                        <ul style="list-style-type: disc; padding-left: 2rem; text-align: left;">
+                            <li><strong>Input data or prompt manipulation:</strong> Attackers can craft malicious inputs or prompts.</li>
+                            <li><strong>Input/output data privacy leakage:</strong>  The model might reveal sensitive information.</li>
+                            <li><strong>Backdooring the Model:</strong> Injecting a hidden trigger into the model.</li>
+                            <li><strong>Training Data Privacy Leakage:</strong> Exposing sensitive information.</li>
+                            <li><strong>Bias from Training Data or Model Type:</strong> The model learns and perpetuates harmful biases.</li>
+                            <li><strong>Model Stealing:</strong> Unauthorized replication of a proprietary model.</li>
+                        </ul>
+                    </div>
+                    <div id="explanation5" class="explanation-box hidden">
+                         <h4 style="font-weight: bold; text-align: center;">Input Data</h4>
+                        <p>
+                            Input data is the new, unseen information that we want the AI to process.
+                        </p>
+
+                         <p><strong>Security Issues:</strong></p>
+                        <ul style="list-style-type: disc; padding-left: 2rem; text-align: left;">
+                            <li><strong>Privacy of user inputs:</strong> Private artifacts of input data may be leaked.
+                                 <ul style="list-style-type: circle; padding-left: 2rem;">
+                                     <li><strong>Example:</strong> A company providing an LLM API might log user inputs and outputs.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Manipulation of inputs:</strong> Inputs to an AI model are perturbed to trick the model.
+                                <ul style="list-style-type: circle; padding-left: 2rem;">
+                                      <li><strong>Example:</strong> A tiny but targetted modification to a drone image could cause a navigation system to misinterpret a landing zone.</li>
+                                      <li><strong>Example:</strong> A tiny but targetted change in weather data could cause a building energy prediction model to drastically overestimate energy consumption.</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <div id="explanation6" class="explanation-box hidden">
+                         <h4 style="font-weight: bold; text-align: center;">Trained Model</h4>
+                        <p>
+                            The trained model is the result of the training process. It embodies the knowledge the AI has gained from the data and is ready to be used for making predictions or decisions.
+                        </p>
+                         <p><strong>Security Issues:</strong></p>
+                        <ul style="list-style-type: disc; padding-left: 2rem; text-align: left;">
+                            <li><strong>Vulnerability to adversarial attacks:</strong> Trained models can be tricked by carefully crafted inputs.
+                                <ul style="list-style-type: circle; padding-left: 2rem;">
+                                     <li><strong>Example:</strong> A tiny but targetted to a drone image could cause a navigation system to misinterpret a landing zone.</li>
+                                     <li><strong>Example:</strong> A tiny but targetted change in the weather data input into a building energy prediction model could cause it to drastically overestimate energy consumption, leading to wasted resources.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Risk of model extraction:</strong> Attackers can attempt to steal or replicate a trained model.
+                                <ul style="list-style-type: circle; padding-left: 2rem;">
+                                     <li><strong>Example:</strong> Model distillation could let a competitor replicate a company's proprietary material discovery model.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Potential for backdoor triggers:</strong> If the training process was compromised, the trained model might contain hidden backdoors.
+                                <ul style="list-style-type: circle; padding-left: 2rem;">
+                                     <li><strong>Example:</strong> A drone image processing model might be compromised to misclassify land containing a pink car.</li>
+                                     <li><strong>Example:</strong> A material discovery model might be compromised to mislabel a polymer composition as "high strength".</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                     <div id="explanation7" class="explanation-box hidden">
+                         <h4 style="font-weight: bold; text-align: center;">Output Data</h4>
+                        <p>
+                            Output data is the result of the AI's processing.
+                        </p>
+                         <p><strong>Security Issues:</strong></p>
+                        <ul style="list-style-type: disc; padding-left: 2rem; text-align: left;">
+                            <li><strong>Leakage of sensitive information:</strong> Model outputs might reveal private information.
+                                 <ul style="list-style-type: circle; padding-left: 2rem;">
+                                      <li><strong>Example:</strong>  An attacker could use membership inference attacks to reveal sensitive health information.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Harmful outputs:</strong> The model might generate incorrect, biased, or misleading outputs.
+                                 <ul style="list-style-type: circle; padding-left: 2rem;">
+                                      <li><strong>Example:</strong>  An LLM might provide dangerous instructions.</li>
+                                      <li><strong>Example:</strong> A financial and climate simulation tool might incorrectly predict cost savings and energy efficiency improvements, harming users.</li>
+                                </ul>
+                            </li>
+                             <li><strong>Subversion of training data privacy or model IP:</strong> Input/output pairs can be used to steal the model.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const phase1 = document.getElementById('phase1');
+        const phase2 = document.getElementById('phase2');
+        const nextButton1 = document.getElementById('nextButton1');
+        const backButton = document.getElementById('backButton');
+        const initialRightColumnText1 = document.getElementById('initialRightColumnText');
+        const initialRightColumnText2 = document.getElementById('initialRightColumnText2');
+
+        const componentsPhase1 = document.querySelectorAll('#phase1 .component');
+        const componentsPhase2 = document.querySelectorAll('#phase2 .component');
+
+
+        const explanations = {
+            1: document.getElementById('explanation1'),
+            2: document.getElementById('explanation2'),
+            3: document.getElementById('explanation3'),
+            4: document.getElementById('explanation4'),
+            5: document.getElementById('explanation5'),
+            6: document.getElementById('explanation6'),
+            7: document.getElementById('explanation7'),
+        };
+
+        let currentPhase = 1;
+        let activeComponent = null;
+
+        function fadeIn(element) {
+            element.classList.add('fade-in');
+        }
+
+        function showExplanation(step, phase) {
+            hideAllExplanations(phase);
+            if (phase === 1) {
+                initialRightColumnText1.classList.add('hidden');
+            } else {
+                initialRightColumnText2.classList.add('hidden');
+            }
+
+            explanations[step].classList.remove('hidden');
+            fadeIn(explanations[step]);
+        }
+
+        function hideAllExplanations(phase) {
+            Object.values(explanations).forEach(explanation => explanation.classList.add('hidden'));
+            if (phase === 1) {
+                document.querySelectorAll('#phase1 .component').forEach(c => c.classList.remove('active'));
+                initialRightColumnText1.classList.remove('hidden');
+            } else {
+                document.querySelectorAll('#phase2 .component').forEach(c => c.classList.remove('active'));
+                initialRightColumnText2.classList.remove('hidden');
+            }
+
+            activeComponent = null;
+        }
+
+        function advancePhase() {
+            if (currentPhase === 1) {
+                phase1.classList.remove('fade-in');
+                phase1.classList.add('hidden');
+                phase2.classList.remove('hidden');
+                fadeIn(phase2);
+                currentPhase = 2;
+                hideAllExplanations(1);
+            }
+        }
+
+        function goBackToTraining() {
+            phase2.classList.remove('fade-in');
+            phase2.classList.add('hidden');
+            phase1.classList.remove('hidden');
+            fadeIn(phase1);
+            currentPhase = 1;
+            hideAllExplanations(2);
+        }
+
+        function handleComponentClick(event) {
+            const componentId = event.target.dataset.component;
+            const phase = currentPhase;
+            showExplanation(componentId, phase);
+            const clickedComponent = event.target;
+
+            if (activeComponent) {
+                activeComponent.classList.remove('active');
+            }
+            clickedComponent.classList.add('active');
+            activeComponent = clickedComponent;
+        }
+
+        componentsPhase1.forEach(component => {
+            component.addEventListener('click', handleComponentClick);
+        });
+
+        componentsPhase2.forEach(component => {
+            component.addEventListener('click', handleComponentClick);
+        });
+
+        nextButton1.addEventListener('click', advancePhase);
+        backButton.addEventListener('click', goBackToTraining);
+
+        fadeIn(phase1);
+
+        document.addEventListener('click', (event) => {
+            if (!event.target.classList.contains('component')) {
+                hideAllExplanations(currentPhase);
+            }
+        });
+    </script>
+</body>
+</html>
